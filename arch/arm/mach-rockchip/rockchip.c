@@ -30,9 +30,13 @@
 #include "pm.h"
 
 #define RK3036_TIMER_PHYS 0x20044000
+#define RK3036_GRF_OS_REG0 0x001c8
 
 #define RK3288_GRF_SOC_CON0 0x244
 #define RK3288_TIMER6_7_PHYS 0xff810000
+
+#define ROCKCHIP_BOOT_MODE_NORMAL 0
+#define ROCKCHIP_BOOT_MODE_FASTBOOT 0x1
 
 static void rockchip_init_arch_timer_supply(resource_size_t phys, int offs)
 {
@@ -79,11 +83,46 @@ static void __init rockchip_timer_init(void)
 	clocksource_of_init();
 }
 
+static int rockchip_restart_notify(struct notifier_block *this,
+			unsigned long event, void *ptr)
+{
+	unsigned int boot_mode = ROCKCHIP_BOOT_MODE_NORMAL;
+
+	if (ptr == NULL)
+		return NOTIFY_DONE;
+
+	if (!strcmp((char *)ptr, "fastboot"))
+		boot_mode = ROCKCHIP_BOOT_MODE_FASTBOOT;
+
+	if (of_machine_is_compatible("rockchip,rk3036")) {
+		struct regmap *grf = NULL;
+
+		grf = syscon_regmap_lookup_by_compatible("rockchip,rk3036-grf");
+
+		if (!IS_ERR(grf))
+			/*
+			 * We use GRF_OS_REG0 to save boot mode.
+			 */
+			regmap_write(grf, RK3036_GRF_OS_REG0, boot_mode);
+		else
+			pr_err("rockchip: could not get grf syscon\n");
+	}
+
+	return NOTIFY_DONE;
+}
+
+static struct notifier_block rockchip_restart_handler = {
+	.notifier_call = rockchip_restart_notify,
+	.priority = INT_MAX,
+};
+
 static void __init rockchip_dt_init(void)
 {
 	rockchip_suspend_init();
 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
 	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
+
+	register_reboot_notifier(&rockchip_restart_handler);
 }
 
 static const char * const rockchip_board_dt_compat[] = {
