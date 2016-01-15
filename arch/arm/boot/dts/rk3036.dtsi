@@ -337,8 +337,8 @@
 		#size-cells = <0>;
 		dmas = <&pdma 0>, <&pdma 1>;
 		dma-names = "tx", "rx";
-		clock-names = "i2s_hclk", "i2s_clk";
-		clocks = <&cru HCLK_I2S>, <&cru SCLK_I2S>;
+		clock-names = "i2s_clk", "i2s_hclk", "i2s_clk_out";
+		clocks = <&cru SCLK_I2S>, <&cru HCLK_I2S>, <&cru SCLK_I2S_OUT>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&i2s0_bus>;
 		status = "disabled";
