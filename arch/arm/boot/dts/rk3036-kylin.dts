@@ -114,13 +114,6 @@
 	status = "okay";
 };
 
-&cpu0 {
-	operating-points = <
-		/* KHz    uV */
-		 600000 1000000
-	>;
-};
-
 &emac {
 	pinctrl-names = "default";
 	pinctrl-0 = <&emac_xfer>, <&emac_mdio>, <&rmii_rst>;
