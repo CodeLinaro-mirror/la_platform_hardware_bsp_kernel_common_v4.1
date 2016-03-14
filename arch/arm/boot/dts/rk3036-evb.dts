@@ -47,19 +47,22 @@
 	compatible = "rockchip,rk3036-evb", "rockchip,rk3036";
 };
 
-&emmc {
-        status = "okay";
-};
-
 &emac {
 	pinctrl-names = "default";
-	pinctrl-0 = <&emac_xfer>, <&emac_mdio>, <&rmii_rst>;
+	pinctrl-0 = <&emac_xfer>, <&emac_mdio>;
 	phy = <&phy0>;
+	phy-reset-gpios = <&gpio2 22 GPIO_ACTIVE_LOW>; /* PHY_RST */
+	phy-reset-duration = <10>; /* millisecond */
+
 	status = "okay";
 
 	phy0: ethernet-phy@0 {
 		reg = <0>;
 	};
+};
+
+&emmc {
+        status = "okay";
 };
 
 &i2c1 {
@@ -76,16 +79,4 @@
 
 &uart2 {
 	status = "okay";
-};
-
-&pinctrl {
-	pcfg_output_high: pcfg-output-high {
-		output-high;
-	};
-
-	emac {
-		rmii_rst: rmii-rst {
-			rockchip,pins = <2 22 RK_FUNC_GPIO &pcfg_output_high>;
-		};
-	};
 };
